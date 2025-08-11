@@ -84,6 +84,49 @@ jobs:
           echo "OIDC provider already in state"
         fi
 
+    - name: Import Existing Resources Before Destroy
+      run: |
+        echo "Importing all existing resources into Terraform state..."
+        
+        # Import OIDC provider
+        terraform import aws_iam_openid_connect_provider.github_actions arn:aws:iam::855978188999:oidc-provider/token.actions.githubusercontent.com || echo "OIDC provider import failed"
+        
+        # Import GitHub Actions IAM role and policies
+        terraform import aws_iam_role.github_actions_role ticket-118-github-action-eks-cluster-github-actions-role || echo "GitHub Actions role import failed"
+        terraform import aws_iam_policy.github_actions_eks_policy arn:aws:iam::855978188999:policy/ticket-118-github-action-eks-cluster-github-actions-eks-policy || echo "EKS policy import failed"
+        terraform import aws_iam_policy.github_actions_iam_policy arn:aws:iam::855978188999:policy/ticket-118-github-action-eks-cluster-github-actions-iam-policy || echo "IAM policy import failed"
+        
+        # Import EKS cluster IAM roles
+        terraform import aws_iam_role.eks_cluster_role ticket-118-github-action-eks-cluster-cluster-role || echo "EKS cluster role import failed"
+        terraform import aws_iam_role.eks_node_group_role ticket-118-github-action-eks-cluster-node-group-role || echo "EKS node role import failed"
+        
+        # Import security groups
+        terraform import aws_security_group.eks_cluster_sg sg-044e60059716fe76b || echo "Cluster SG import failed"
+        terraform import aws_security_group.eks_nodes_sg sg-08c19713020e246a2 || echo "Nodes SG import failed"
+        
+        # Import EKS cluster and node group
+        terraform import aws_eks_cluster.main ticket-118-github-action-eks-cluster || echo "EKS cluster import failed"
+        terraform import aws_eks_node_group.main ticket-118-github-action-eks-cluster:ticket-118-github-action-eks-cluster-nodes || echo "Node group import failed"
+        
+        # Import EKS addons
+        terraform import aws_eks_addon.vpc_cni ticket-118-github-action-eks-cluster:vpc-cni || echo "VPC CNI addon import failed"
+        terraform import aws_eks_addon.coredns ticket-118-github-action-eks-cluster:coredns || echo "CoreDNS addon import failed"
+        terraform import aws_eks_addon.kube_proxy ticket-118-github-action-eks-cluster:kube-proxy || echo "Kube-proxy addon import failed"
+        
+        # Import policy attachments (these might fail but that's okay)
+        terraform import aws_iam_role_policy_attachment.eks_cluster_policy ticket-118-github-action-eks-cluster-cluster-role/arn:aws:iam::aws:policy/AmazonEKSClusterPolicy || echo "Cluster policy attachment import failed"
+        terraform import aws_iam_role_policy_attachment.eks_worker_node_policy ticket-118-github-action-eks-cluster-node-group-role/arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy || echo "Worker policy attachment import failed"
+        terraform import aws_iam_role_policy_attachment.eks_cni_policy ticket-118-github-action-eks-cluster-node-group-role/arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy || echo "CNI policy attachment import failed"
+        terraform import aws_iam_role_policy_attachment.eks_container_registry_policy ticket-118-github-action-eks-cluster-node-group-role/arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly || echo "Registry policy attachment import failed"
+        
+        echo "Import phase completed. Some imports may have failed - this is expected for policy attachments."
+
+    - name: Verify Imported State
+      run: |
+        echo "Checking what resources are now in Terraform state..."
+        terraform state list
+        echo "State verification completed."
+
     - name: Terraform Plan Destroy
       id: plan-destroy
       run: |
@@ -110,7 +153,7 @@ jobs:
 
     - name: Terraform Destroy
       run: |
-        echo "íº¨ Starting cluster destruction..."
+        echo "ðŸš¨ Starting cluster destruction..."
         terraform apply -auto-approve destroy-plan
         echo "âœ… Cluster destruction completed"
 
