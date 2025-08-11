@@ -1,0 +1,154 @@
+name: Deploy EKS Cluster
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.tf'
+      - '.github/workflows/deploy-eks.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform Action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+
+env:
+  TF_VERSION: '1.5.0'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  terraform:
+    name: 'Terraform Deploy'
+    runs-on: ubuntu-latest
+    
+    # Use OIDC to assume role in AWS
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::855978188999:role/ticket-118-github-action-eks-cluster-github-actions-role
+        role-session-name: GitHubActions-EKS-Deploy
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Verify AWS Identity
+      run: |
+        echo "AWS Identity:"
+        aws sts get-caller-identity
+        echo "AWS Region: $AWS_REGION"
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Terraform Format Check
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      run: |
+        terraform init
+        echo "Terraform initialized successfully"
+
+    - name: Terraform Validate
+      run: |
+        terraform validate
+        echo "Terraform configuration is valid"
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        terraform plan -out=tfplan -no-color
+        echo "plan-exitcode=$?" >> $GITHUB_OUTPUT
+
+    - name: Comment Plan on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          
+          <details><summary>Show Plan</summary>
+          
+          \`\`\`terraform
+          ${{ steps.plan.outputs.stdout }}
+          \`\`\`
+          
+          </details>
+          
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+
+    - name: Terraform Apply
+      if: |
+        (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      run: |
+        echo "Applying Terraform configuration..."
+        terraform apply -auto-approve tfplan
+        echo "Terraform apply completed successfully"
+
+    - name: Get Cluster Info
+      if: |
+        (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      run: |
+        echo "EKS Cluster Information:"
+        echo "Cluster Name: $(terraform output -raw cluster_name)"
+        echo "Cluster Endpoint: $(terraform output -raw cluster_endpoint)"
+        echo "Cluster Status: $(terraform output -raw cluster_status)"
+        echo "GitHub Actions Role ARN: $(terraform output -raw github_actions_role_arn)"
+
+    - name: Configure kubectl
+      if: |
+        (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      run: |
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name $(terraform output -raw cluster_name)
+        
+    - name: Verify Cluster
+      if: |
+        (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+      run: |
+        echo "Verifying cluster nodes:"
+        kubectl get nodes
+        echo "Verifying cluster pods:"
+        kubectl get pods --all-namespaces
+
+    - name: Upload Terraform Plan
+      if: steps.plan.outcome == 'success'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: tfplan
+        retention-days: 5

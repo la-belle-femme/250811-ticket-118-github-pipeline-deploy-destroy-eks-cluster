@@ -1,0 +1,16 @@
+# Terraform files to exclude
+terraform.tfstate
+terraform.tfstate.backup
+terraform.tfstate.*.backup
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+
+# AWS credentials and keys
+*.pem
+*.key
+
+# OS and IDE files
+.DS_Store
+.vscode/
+*.log

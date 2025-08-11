@@ -1,0 +1,142 @@
+name: Destroy EKS Cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "DESTROY" to confirm cluster destruction'
+        required: true
+        type: string
+      cluster_name:
+        description: 'EKS Cluster Name to destroy'
+        required: true
+        default: 'ticket-118-github-action-eks-cluster'
+        type: string
+
+env:
+  TF_VERSION: '1.5.0'
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+    
+    # Use OIDC to assume role in AWS
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Validate Destruction Confirmation
+      run: |
+        if [ "${{ github.event.inputs.confirmation }}" != "DESTROY" ]; then
+          echo "❌ Destruction confirmation failed. You must type 'DESTROY' exactly to proceed."
+          echo "You entered: '${{ github.event.inputs.confirmation }}'"
+          exit 1
+        fi
+        echo "✅ Destruction confirmed. Proceeding with cluster destruction."
+
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::855978188999:role/ticket-118-github-action-eks-cluster-github-actions-role
+        role-session-name: GitHubActions-EKS-Destroy
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Verify AWS Identity
+      run: |
+        echo "AWS Identity:"
+        aws sts get-caller-identity
+        echo "AWS Region: $AWS_REGION"
+
+    - name: Verify Cluster Exists
+      run: |
+        echo "Checking if cluster exists..."
+        if aws eks describe-cluster --name ${{ github.event.inputs.cluster_name }} --region ${{ env.AWS_REGION }} &> /dev/null; then
+          echo "✅ Cluster '${{ github.event.inputs.cluster_name }}' found."
+          aws eks describe-cluster --name ${{ github.event.inputs.cluster_name }} --region ${{ env.AWS_REGION }} --query 'cluster.{Name:name,Status:status,Version:version,Endpoint:endpoint}' --output table
+        else
+          echo "⚠️  Cluster '${{ github.event.inputs.cluster_name }}' not found or not accessible."
+          echo "This might be expected if the cluster was already destroyed."
+        fi
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Terraform Init
+      run: |
+        terraform init
+        echo "Terraform initialized successfully"
+
+    - name: Import Existing OIDC Provider (if needed)
+      run: |
+        echo "Checking if OIDC provider needs to be imported..."
+        if ! terraform state list | grep -q "aws_iam_openid_connect_provider.github_actions"; then
+          echo "Importing existing OIDC provider..."
+          terraform import aws_iam_openid_connect_provider.github_actions arn:aws:iam::855978188999:oidc-provider/token.actions.githubusercontent.com || true
+        else
+          echo "OIDC provider already in state"
+        fi
+
+    - name: Terraform Plan Destroy
+      id: plan-destroy
+      run: |
+        echo "Planning destruction of EKS cluster..."
+        terraform plan -destroy -out=destroy-plan -no-color
+        echo "Destroy plan created successfully"
+
+    - name: Show Destroy Plan Summary
+      run: |
+        echo "=== RESOURCES TO BE DESTROYED ==="
+        terraform show -no-color destroy-plan | grep -E "(will be destroyed|Plan:|Changes to)"
+
+    - name: Final Confirmation
+      run: |
+        echo "⚠️  WARNING: This will permanently destroy the following:"
+        echo "- EKS Cluster: ${{ github.event.inputs.cluster_name }}"
+        echo "- Worker Node Groups"
+        echo "- Security Groups"
+        echo "- IAM Roles and Policies"
+        echo "- CloudWatch Log Groups"
+        echo ""
+        echo "✅ Confirmed by user: ${{ github.actor }}"
+        echo "✅ Confirmation text: ${{ github.event.inputs.confirmation }}"
+
+    - name: Terraform Destroy
+      run: |
+        echo "🚨 Starting cluster destruction..."
+        terraform apply -auto-approve destroy-plan
+        echo "✅ Cluster destruction completed"
+
+    - name: Verify Cluster Destruction
+      run: |
+        echo "Verifying cluster destruction..."
+        sleep 30
+        
+        if aws eks describe-cluster --name ${{ github.event.inputs.cluster_name }} --region ${{ env.AWS_REGION }} &> /dev/null; then
+          echo "⚠️  Cluster still exists - destruction may be in progress"
+          aws eks describe-cluster --name ${{ github.event.inputs.cluster_name }} --region ${{ env.AWS_REGION }} --query 'cluster.status' --output text
+        else
+          echo "✅ Cluster successfully destroyed"
+        fi
+
+    - name: Cleanup Local State (Optional)
+      if: always()
+      run: |
+        echo "Cleaning up local Terraform state files..."
+        ls -la terraform.tfstate* || echo "No state files to clean"
+
+    - name: Destruction Summary
+      if: always()
+      run: |
+        echo "=== DESTRUCTION SUMMARY ==="
+        echo "Cluster Name: ${{ github.event.inputs.cluster_name }}"
+        echo "Requested by: ${{ github.actor }}"
+        echo "Timestamp: $(date)"
+        echo "Status: ${{ job.status }}"
