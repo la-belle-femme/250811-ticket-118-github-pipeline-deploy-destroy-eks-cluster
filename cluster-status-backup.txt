@@ -1,0 +1,10 @@
+NAME                            STATUS   ROLES    AGE   VERSION
+ip-172-31-25-112.ec2.internal   Ready    <none>   51m   v1.30.14-eks-3abbec1
+ip-172-31-9-127.ec2.internal    Ready    <none>   51m   v1.30.14-eks-3abbec1
+NAMESPACE     NAME                       READY   STATUS    RESTARTS   AGE
+kube-system   aws-node-28qcn             2/2     Running   0          50m
+kube-system   aws-node-6fkc2             2/2     Running   0          50m
+kube-system   coredns-586b798467-2snrd   1/1     Running   0          58m
+kube-system   coredns-586b798467-zbj9q   1/1     Running   0          58m
+kube-system   kube-proxy-b5qdn           1/1     Running   0          51m
+kube-system   kube-proxy-lpt5q           1/1     Running   0          51m

@@ -1,0 +1,16 @@
+cluster_arn = "arn:aws:eks:us-east-1:855978188999:cluster/ticket-118-github-action-eks-cluster"
+cluster_certificate_authority_data = <sensitive>
+cluster_endpoint = "https://5A1F96E9BA605BE621AD236AA7244A67.gr7.us-east-1.eks.amazonaws.com"
+cluster_iam_role_arn = "arn:aws:iam::855978188999:role/ticket-118-github-action-eks-cluster-cluster-role"
+cluster_id = "ticket-118-github-action-eks-cluster"
+cluster_name = "ticket-118-github-action-eks-cluster"
+cluster_platform_version = "eks.40"
+cluster_primary_security_group_id = "sg-06f62a0866830d387"
+cluster_security_group_id = "sg-06f62a0866830d387"
+cluster_status = "ACTIVE"
+cluster_version = "1.30"
+kubectl_config = <sensitive>
+node_group_arn = "arn:aws:eks:us-east-1:855978188999:nodegroup/ticket-118-github-action-eks-cluster/ticket-118-github-action-eks-cluster-nodes/30cc4ceb-0468-e666-090a-95e5f7bea8a2"
+node_group_iam_role_arn = "arn:aws:iam::855978188999:role/ticket-118-github-action-eks-cluster-node-group-role"
+node_group_status = "ACTIVE"
+node_security_group_id = "sg-08c19713020e246a2"

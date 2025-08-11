@@ -1,0 +1,76 @@
+{
+    "cluster": {
+        "name": "ticket-118-github-action-eks-cluster",
+        "arn": "arn:aws:eks:us-east-1:855978188999:cluster/ticket-118-github-action-eks-cluster",
+        "createdAt": "2025-08-11T11:43:12.935000-04:00",
+        "version": "1.30",
+        "endpoint": "https://5A1F96E9BA605BE621AD236AA7244A67.gr7.us-east-1.eks.amazonaws.com",
+        "roleArn": "arn:aws:iam::855978188999:role/ticket-118-github-action-eks-cluster-cluster-role",
+        "resourcesVpcConfig": {
+            "subnetIds": [
+                "subnet-0325b03933424daa3",
+                "subnet-0c171df46bf5e3e2f",
+                "subnet-08a96a34702e19938"
+            ],
+            "securityGroupIds": [
+                "sg-044e60059716fe76b"
+            ],
+            "clusterSecurityGroupId": "sg-06f62a0866830d387",
+            "vpcId": "vpc-0b29462da246e0151",
+            "endpointPublicAccess": true,
+            "endpointPrivateAccess": true,
+            "publicAccessCidrs": [
+                "0.0.0.0/0"
+            ]
+        },
+        "kubernetesNetworkConfig": {
+            "serviceIpv4Cidr": "10.100.0.0/16",
+            "ipFamily": "ipv4",
+            "elasticLoadBalancing": {
+                "enabled": false
+            }
+        },
+        "logging": {
+            "clusterLogging": [
+                {
+                    "types": [
+                        "api",
+                        "audit"
+                    ],
+                    "enabled": true
+                },
+                {
+                    "types": [
+                        "authenticator",
+                        "controllerManager",
+                        "scheduler"
+                    ],
+                    "enabled": false
+                }
+            ]
+        },
+        "identity": {
+            "oidc": {
+                "issuer": "https://oidc.eks.us-east-1.amazonaws.com/id/5A1F96E9BA605BE621AD236AA7244A67"
+            }
+        },
+        "status": "ACTIVE",
+        "certificateAuthority": {
+            "data": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCVENDQWUyZ0F3SUJBZ0lJUWE0eFI4YzhmaE13RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TlRBNE1URXhOVFF6TWpkYUZ3MHpOVEE0TURreE5UUTRNamRhTUJVeApFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUUM5ajE2a0cySy91WS9HenRaVnFHaVBPSHNtSzJ5NU11dm1LeEdpZG15NnhsTjBHb2YvS2oraTZBN3oKb0NTZTk4b1ROZGhPakRYOFMzOFVod3BqaGNGSVlDalRRekcvQ3prSmVvbm1zUzBkMzBIbUYvKzBJaHNodll4VQpzSFljWVBiaHA1RUswbU5aeXhNTVZCYTdXa2NBMEgrT2dWMVlBVjJ2SUZZSytiS1ZLMndYa1dscXNkekcxRXBnCm8wMEVNNkVBZzM1eDVGSkV2ejd3NWhyaG93SG5hRGJOdGdkbE9xSmk1b2NsNXRRSG01ZXZUSnZRUkNFME9qdGcKeVFqbS9HcTFRNDZidGRGMEpGVWUwWCsrQ0RVWThzem5TVVZYdTV4c3JpUk1xalNmRTJEMUd0TFFMWHVGQVl1ZgpJUzZFdHJ6SHNlYXdxRDhRM2lROW8rT1o1V2pkQWdNQkFBR2pXVEJYTUE0R0ExVWREd0VCL3dRRUF3SUNwREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJUVW56UHhnVXpHUnFYOVd0dVBpUjdBSjlVS1FEQVYKQmdOVkhSRUVEakFNZ2dwcmRXSmxjbTVsZEdWek1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQkNEeVFXS1VvOAo0dkEvVWRIanFxRmdRRE9mM2JYUmRFRFZac0ppSzBZaFdtYWUrM2J4R3l3ZXM4VDVXRG1VeEdQVUx5cnBjSmdTCmFYQTZsT1BnSURJVk1yNXdPWXVVSTV6ekFXV3BMcEd3OXpOdk1XUWdMakpqUnJtcFE0YW9wZ0VBWnc2aDdrUUoKdjVIWXk2OERncW5mTkpicHZscldzWDdOakExd1JKajZVRlhDdWtpVVdhS1FVSlRvTm5JN2Q2ODh5ZDYvVGNVTAp4bnRBdFh5M3N2ZGlxYjVrblMyOTFyakszd2xKcmpmcFJkbTllTXNDT1laS2VHWWJUVU01NmV3cWFYTE85bnNsCjdOZ3BSemFaTkxHOVZwMkFRanAyTFE0b3YrNmtoNjNvWlErZCs0c29GUkRrQTBFZUZ6a0RYb3dvdnpLZ3BQUGYKU21oM25aTU1HVEx6Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+        },
+        "platformVersion": "eks.40",
+        "tags": {
+            "Project": "ticket-118",
+            "Environment": "development",
+            "Owner": "devops-team",
+            "Repository": "250811-ticket-118-github-pipeline-deploy-destroy-eks-cluster",
+            "ManagedBy": "terraform"
+        },
+        "accessConfig": {
+            "authenticationMode": "CONFIG_MAP"
+        },
+        "upgradePolicy": {
+            "supportType": "EXTENDED"
+        }
+    }
+}

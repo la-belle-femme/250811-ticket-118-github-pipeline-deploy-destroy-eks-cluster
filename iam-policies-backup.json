@@ -1,0 +1,12 @@
+{
+    "AttachedPolicies": [
+        {
+            "PolicyName": "ticket-118-github-action-eks-cluster-github-actions-iam-policy",
+            "PolicyArn": "arn:aws:iam::855978188999:policy/ticket-118-github-action-eks-cluster-github-actions-iam-policy"
+        },
+        {
+            "PolicyName": "ticket-118-github-action-eks-cluster-github-actions-eks-policy",
+            "PolicyArn": "arn:aws:iam::855978188999:policy/ticket-118-github-action-eks-cluster-github-actions-eks-policy"
+        }
+    ]
+}
