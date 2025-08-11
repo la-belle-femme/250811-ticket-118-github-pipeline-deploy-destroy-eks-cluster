@@ -90,6 +90,7 @@ resource "aws_iam_policy" "github_actions_eks_policy" {
           
           # EC2 permissions for EKS
           "ec2:DescribeVpcs",
+          "ec2:DescribeVpcAttribute",
           "ec2:DescribeSubnets",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeRouteTables",
