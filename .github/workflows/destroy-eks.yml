@@ -110,7 +110,7 @@ jobs:
 
     - name: Terraform Destroy
       run: |
-        echo "ðŸš¨ Starting cluster destruction..."
+        echo "íº¨ Starting cluster destruction..."
         terraform apply -auto-approve destroy-plan
         echo "âœ… Cluster destruction completed"
 
